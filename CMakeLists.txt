@@ -42,5 +42,6 @@ target_link_libraries(
         pthread
         mpdclient
 )
-
-INSTALL(FILES scripts/startWiimote.sh misc/webradio.m3u DESTINATION install_directory)
+set( InstalledFiles scripts/startWiimote.sh misc/webradio.m3u)
+INSTALL(FILES ${InstalledFiles} DESTINATION install_directory)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/radio DESTINATION install_directory)
