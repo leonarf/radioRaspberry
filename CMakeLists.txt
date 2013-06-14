@@ -3,25 +3,34 @@ cmake_minimum_required(VERSION 2.8)
 #Déclaration du projet
 project(raspberry)
 
-set(TARGET ON CACHE STRING "raspbian or fedora")
+function(replaceTag tag value filePath)
+	FILE(READ ${filePath} FILE_CONTENT)
+	MESSAGE("contenu du fichier ${filePath} : ${FILE_CONTENT}")
+	STRING(REPLACE "${tag})" "${value}" 
+		MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
+	FILE(WRITE ${filePath} "${MODIFIED_FILE_CONTENT}")
+endfunction(replaceTag)
+
+set(TARGET "raspbian" CACHE STRING "qemu or fedora")
 
 include_directories(include)
 
 ###########################
-# for raspberry compilation
+# for qemu compilation
 ###########################
 if ( ${TARGET} STREQUAL "raspbian" )
 	add_definitions(-std=c++0x)
 	add_library( wiiuse SHARED IMPORTED )
-	MESSAGE("cherche wiiuse.so dans ${CMAKE_BINARY_DIR}")
+	MESSAGE("put your libwiiuse.so in ${CMAKE_BINARY_DIR} for correct link")
 	set_target_properties( wiiuse PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/libwiiuse.so )
 	add_definitions( -DRASPBERRY )
-
+	set(INSTALL_DIR "sandbox")
 ########################
 # for fedora compilation
 ########################
 elseif( ${TARGET} STREQUAL "fedora" )
 	add_definitions(-std=gnu++11)
+	set(INSTALL_DIR "sandbox")
 else()
 	MESSAGE("TARGET ${TARGET} not supported")
 endif ()
@@ -34,6 +43,7 @@ add_executable(
         src/RadioManager.cpp
         src/Utils.cpp
         src/WiimoteManager.cpp
+        src/ConfigManager.cpp
 )
 
 target_link_libraries(
@@ -42,6 +52,24 @@ target_link_libraries(
         pthread
         mpdclient
 )
-set( InstalledFiles scripts/startWiimote.sh misc/webradio.m3u)
-INSTALL(FILES ${InstalledFiles} DESTINATION install_directory)
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/radio DESTINATION install_directory)
+
+##################
+## INSTALL PART ##
+##################
+install(PROGRAMS scripts/startWiimote.sh
+	DESTINATION ${INSTALL_DIR})
+
+#load the function replaceTag
+install(SCRIPT "replaceTag.cmake")
+#use the function loaded
+install(CODE "replaceTag( \"##TARGET##\" ${TARGET} ${INSTALL_DIR}/startWiimote.sh)")
+install(FILES misc/webradio.m3u
+	DESTINATION ${INSTALL_DIR})
+
+set( soundFiles misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
+install(FILES ${soundFiles} DESTINATION ${INSTALL_DIR}/sound)
+install(TARGETS radio
+	RUNTIME DESTINATION ${INSTALL_DIR})
+
+#install(TARGETS wiiuse
+#	LIBRARY DESTINATION ${INSTALL_DIR})

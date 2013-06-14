@@ -11,16 +11,24 @@
 #include <iostream>
 #include "WiimoteManager.h"
 #include "Utils.h"
+#include "ConfigManager.h"
 
 using namespace std;
 
-int main( void) {
-	map<string, string> test;
-	readConfigurationFile( "/home/leonard/workspace/radioCplus/target/test.txt", test);
-	map<string, string>::iterator iter = test.begin();
-	for (; iter != test.end(); iter++) {
-		cout << iter->first << " = " << iter->second << endl;
+int main( int argc, char *argv[]) {
+	string binDir = argv[0];
+	binDir = binDir.substr( 0, binDir.find_last_of( '/') + 1);
+	ConfigManager::instance()->setBinDir( binDir);
+	cout << "binDir : " << binDir << endl;
+	cout << "argv[0] : " << argv[0] << endl;
+	string configFile = "";
+	if (argc >= 2) {
+		configFile = argv[1];
+		cout << "argv[1] : " << argv[1] << endl;
+		ConfigManager::instance()->setConfigFile( argv[1]);
 	}
+	return 0;
+
 	WiimoteManager wiimoteManager;
 	//boucle pour se connecter
 	while (wiimoteManager.connect() <= 0) {

@@ -6,6 +6,8 @@
  */
 
 #include "Utils.h"
+#include "ConfigManager.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
@@ -67,9 +69,7 @@ void readConfigurationFile( const string &fileName, map<string, string> &config)
 	}
 }
 
-void playSound(const string& soundFile){
-	string tmp("play ");
-	tmp.append(PATH);
-	tmp.append("sound/"+soundFile);
-	system(tmp.c_str());
+void playSound( const string& soundFile) {
+	string tmp( "play " + ConfigManager::instance()->getBinDir() + "sound/" + soundFile);
+	system( tmp.c_str());
 }

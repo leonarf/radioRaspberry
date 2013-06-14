@@ -76,6 +76,7 @@ RadioManager* RadioManager::instance() {
 	}
 	return _pInstance;
 }
+
 void RadioManager::connectMPD() {
 	if (_mpdConnect != NULL) {
 		mpd_connection_free( _mpdConnect);

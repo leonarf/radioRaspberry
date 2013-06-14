@@ -26,11 +26,4 @@ void playSound(const string& soundFile);
 
 #define LOG(text) cout << currentTime() << " :\t" << __PRETTY_FUNCTION__ << " :\t" << text << endl
 
-
-#ifdef RASPBERRY
-#define PATH "/home/pi/radio/"
-#else
-#define PATH "/home/leonard/workspace/radioCplus/target/"
-#endif /* RASPBERRY */
-
 #endif /* UTILS_H_ */

@@ -2,20 +2,26 @@
 
 stopComputer=-1
 
-name=$(uname -a)
+home=$(dirname "$0")
+target="##TARGET##"
 
-if [[ "$name=" == *raspberry* ]]
+if [[ "$target" == "raspbian" ]]
 then
-	home="/home/pi/radio/"
 	exitCommand="sudo poweroff"
 	ipAddress="192.168.0.4"
-else
-	home="/home/leonard/workspace/radioCplus/target/"
+elif [[ "$target" == "fedora" ]]
+then
 	exitCommand='echo "sudo poweroff"'
 	ipAddress="192.168.0.5"
+elif [[ "$target" == "qemu" ]]
+then
+	echo "todo target qemu"
+else
+	echo "ERROR : var 'target' must be define in ${home}/startWiimote.sh"
+	exit 1
 fi
 echo "$home"
-play "${home}sound/hello_uk.wav"
+play "${home}/sound/hello_uk.wav"
 while [ 1 ]
 do
 	sleep 10
@@ -23,7 +29,7 @@ do
 	networkConfig="ifconfig | grep $ipAddress"
 	if [ ! -n "$networkConfig" ]
 	then
-		play "${home}sound/youllregretthat.wav"
+		play "${home}/sound/youllregretthat.wav"
 		ifdown eth0
 		sleep 5
 		ifup eth0
@@ -34,19 +40,19 @@ do
 	hciDevices=$(hcitool dev)
 	if [[ ! "$hciDevices=" == *hci* ]]
 	then
-		play "${home}sound/uh-oh.wav"
-		sudo ${home}resetLibusb 1 4
+		play "${home}/sound/uh-oh.wav"
+		sudo ${home}/resetLibusb 1 4
 		sleep 5
 		sudo service bluetooth restart
 		continue
 	fi
-	play "${home}sound/comeonthen.wav"
+	play "${home}/sound/comeonthen.wav"
 	${home}radio
 	stopComputer=$?
 	echo "$stopComputer"
 	if [ "$stopComputer" == "1" ]
 	then
-		play "${home}sound/byebye.wav"
+		play "${home}/sound/byebye.wav"
 		$exitCommand
 	fi
 
