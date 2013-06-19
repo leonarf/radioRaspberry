@@ -20,11 +20,15 @@ include_directories(include)
 ###########################
 if ( ${TARGET} STREQUAL "raspbian" )
 	add_definitions(-std=c++0x)
-	add_library( wiiuse SHARED IMPORTED )
+	add_library( wiiuse SHARED IMPORTED)
 	MESSAGE("put your libwiiuse.so in ${CMAKE_BINARY_DIR} for correct link")
 	set_target_properties( wiiuse PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/libwiiuse.so )
 	add_definitions( -DRASPBERRY )
 	set(INSTALL_DIR "sandbox")
+#	install(TARGETS wiiuse
+#		LIBRARY DESTINATION ${INSTALL_DIR})
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/libwiiuse.so
+		DESTINATION ${INSTALL_DIR})
 ########################
 # for fedora compilation
 ########################
@@ -71,5 +75,3 @@ install(FILES ${soundFiles} DESTINATION ${INSTALL_DIR}/sound)
 install(TARGETS radio
 	RUNTIME DESTINATION ${INSTALL_DIR})
 
-#install(TARGETS wiiuse
-#	LIBRARY DESTINATION ${INSTALL_DIR})

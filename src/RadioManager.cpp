@@ -30,7 +30,6 @@ if (!function) {\
 RadioManager::RadioManager() :
 		_playedRadio( 0), _running( false), _changingRadio( false), _mpdConnect( NULL) {
 	connectMPD();
-	IF_MPD_BREAK(false);
 	//init playlist list
 	IF_MPD_BREAK( mpd_send_list_queue_meta( _mpdConnect));
 	mpd_song* oneRadio;

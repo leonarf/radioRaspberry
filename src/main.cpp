@@ -27,7 +27,6 @@ int main( int argc, char *argv[]) {
 		cout << "argv[1] : " << argv[1] << endl;
 		ConfigManager::instance()->setConfigFile( argv[1]);
 	}
-	return 0;
 
 	WiimoteManager wiimoteManager;
 	//boucle pour se connecter

@@ -47,7 +47,7 @@ do
 		continue
 	fi
 	play "${home}/sound/comeonthen.wav"
-	${home}radio
+	${home}/radio
 	stopComputer=$?
 	echo "$stopComputer"
 	if [ "$stopComputer" == "1" ]
