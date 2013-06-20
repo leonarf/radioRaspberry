@@ -12,6 +12,8 @@ function(replaceTag tag value filePath)
 endfunction(replaceTag)
 
 set(TARGET "raspbian" CACHE STRING "qemu or fedora")
+SET(INSTALL_PREFIX "." CACHE PATH "Where sandbox will be created")
+set(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "where sandbox will be created" FORCE)
 
 include_directories(include)
 
