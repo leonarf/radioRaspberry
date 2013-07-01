@@ -72,7 +72,7 @@ install(CODE "replaceTag( \"##TARGET##\" ${TARGET} ${INSTALL_DIR}/startWiimote.s
 install(FILES misc/webradio.m3u
 	DESTINATION ${INSTALL_DIR})
 
-set( soundFiles misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
+set( soundFiles misc/byebye.wav misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
 install(FILES ${soundFiles} DESTINATION ${INSTALL_DIR}/sound)
 install(TARGETS radio
 	RUNTIME DESTINATION ${INSTALL_DIR})

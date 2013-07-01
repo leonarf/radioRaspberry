@@ -61,6 +61,7 @@ RadioManager::RadioManager() :
 		_running = true;
 	}
 	_playedRadio = mpd_status_get_song_pos( status);
+	LOG("Played radio is (" << _playedRadio << ")" << _radioList[_playedRadio] );
 	_volume = mpd_status_get_volume( status);
 	mpd_status_free( status);
 }

@@ -119,7 +119,7 @@ bool WiimoteManager::startHandlingEvent() {
 				LOG( "Expected disconnet event received");
 				rumbleSync(200000);
 				disconnect();
-				return false;
+				return true;
 			case WIIUSE_UNEXPECTED_DISCONNECT:
 				/* the wiimote disconnected
 				 * exit function
@@ -130,7 +130,7 @@ bool WiimoteManager::startHandlingEvent() {
 				LOG( "Unexpected disconnet event received");
 				rumbleSync(200000);
 				disconnect();
-				return true;
+				return false;
 			case WIIUSE_READ_DATA:
 				/*
 				 *	Data we requested to read was returned.
