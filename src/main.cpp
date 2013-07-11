@@ -12,10 +12,13 @@
 #include "WiimoteManager.h"
 #include "Utils.h"
 #include "ConfigManager.h"
+#include "ScreenManager.h"
 
 using namespace std;
 
 int main( int argc, char *argv[]) {
+	ScreenManager::instance()->start();
+	return 0;
 	string binDir = argv[0];
 	binDir = binDir.substr( 0, binDir.find_last_of( '/') + 1);
 	ConfigManager::instance()->setBinDir( binDir);

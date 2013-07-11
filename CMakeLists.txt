@@ -50,6 +50,7 @@ add_executable(
         src/Utils.cpp
         src/WiimoteManager.cpp
         src/ConfigManager.cpp
+        src/ScreenManager.cpp
 )
 
 target_link_libraries(
