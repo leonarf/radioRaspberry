@@ -1,5 +1,15 @@
 radioRaspberry
 ======================
+= GOALS =
+======================
+This project functions are :
+* Read webradio using MPD with a raspberry
+* Control the "radio" with a wiimote
+* Replace the remote control of a projector (or TV)
+* Play movies on this projector
+* Control everything with the wiimote or a unique remote.
+
+======================
 = BUILD DEPENDENCIES =
 ======================
 * libbluetooth-dev
