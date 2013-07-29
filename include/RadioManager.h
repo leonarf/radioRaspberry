@@ -12,10 +12,12 @@
 #include <string>
 
 #include <mpd/client.h>
+#include <mosquittopp.h>
 
 using namespace std;
+using namespace mosqpp;
 
-class RadioManager {
+class RadioManager : private mosquittopp {
 public:
 	void setRadio( int radioNumber);
 	void startRadio();
@@ -35,6 +37,8 @@ private:
 	void changingRadio();
 	static void callChangingRadio();
 	void connectMPD();
+	void connectMQTT();
+	void on_message(const struct mosquitto_message *message);
 	vector<string> _radioList;
 	int _playedRadio;
 	int _volume;

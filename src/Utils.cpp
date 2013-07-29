@@ -73,3 +73,10 @@ void playSound( const string& soundFile) {
 	string tmp( "play " + ConfigManager::instance()->getBinDir() + "sound/" + soundFile);
 	system( tmp.c_str());
 }
+
+//Converting a number to string
+string numberToString( int num) {
+	ostringstream strout;
+	strout << num;
+	return strout.str();
+}

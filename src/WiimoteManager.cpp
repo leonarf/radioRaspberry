@@ -5,9 +5,51 @@
 #include <unistd.h>
 #include <iostream>
 #include <thread>
+#include "jsoncpp/json/json.h"
 
 #define MAX_WIIMOTES 2
 #define DECO_TIMEOUT 60 // en secondes
+void WiimoteManager::on_message( const struct mosquitto_message *message) {
+	string topic( message->topic);
+	LOG( "MQTT event received, topic = " << topic);
+	if (topic == "/home/actuators") {
+		string payload( static_cast<char *>( message->payload));
+		if (payload == "list") {
+			sleep( 1);
+			Json::Value root;
+			root[1]["icon"] = "lightbulb";
+			root[2]["icon"] = "lightbulb";
+			root[3]["icon"] = "lightbulb";
+			root[4]["icon"] = "lightbulb";
+			Json::StyledWriter jsonWriter;
+			string values = jsonWriter.write( root);
+			cout << "sending : " << values << endl;
+			publish( NULL, "/home/actuators/radio/values", values.size(), values.c_str(), 2);
+		}
+	}
+	else if (topic == "/home/actuators/radio"){
+		int payload = *static_cast<int *>( message->payload);
+		switch (payload) {
+			case 1:
+				wiiuse_set_leds( _wiimotes[0], WIIMOTE_LED_1);
+				break;
+			case 2:
+				wiiuse_set_leds( _wiimotes[0], WIIMOTE_LED_2);
+				break;
+			case 3:
+				wiiuse_set_leds( _wiimotes[0], WIIMOTE_LED_3);
+				break;
+			case 4:
+				wiiuse_set_leds( _wiimotes[0], WIIMOTE_LED_4);
+				break;
+			default:
+				break;
+		}
+
+	}
+	return;
+}
+
 WiimoteManager::WiimoteManager() :
 		_changingVolume( false) {
 	/*
@@ -16,8 +58,18 @@ WiimoteManager::WiimoteManager() :
 	 *	The parameter is the number of wiimotes I want to create.
 	 */
 	_wiimotes = wiiuse_init( MAX_WIIMOTES);
-	RadioManager::instance()->changeVolume(0);
-
+	RadioManager::instance()->changeVolume( 0);
+	int mqttResult = connect( BROKER_ADDRESS, BROKER_PORT);
+	if (mqttResult != MOSQ_ERR_SUCCESS) {
+		LOG( "could not connect to mqtt broker, error : " << mqttResult);
+		return;
+	}
+	mqttResult = subscribe( NULL, "/home/actuators", 2);
+	if (mqttResult != MOSQ_ERR_SUCCESS) {
+		LOG( "could not subscribe to mqtt broker, error : " << mqttResult);
+		return;
+	}
+	loop_start();
 }
 
 WiimoteManager::~WiimoteManager() {
@@ -27,7 +79,7 @@ WiimoteManager::~WiimoteManager() {
 	wiiuse_cleanup( _wiimotes, MAX_WIIMOTES);
 }
 
-int WiimoteManager::connect() {
+int WiimoteManager::wiiConnect() {
 	int found, connected;
 	/*
 	 *	Find wiimote devices
@@ -117,7 +169,7 @@ bool WiimoteManager::startHandlingEvent() {
 				 *	Disconnect the wiimotes
 				 */
 				LOG( "Expected disconnet event received");
-				rumbleSync(200000);
+				rumbleSync( 200000);
 				disconnect();
 				return true;
 			case WIIUSE_UNEXPECTED_DISCONNECT:
@@ -128,7 +180,7 @@ bool WiimoteManager::startHandlingEvent() {
 				 *	Disconnect the wiimotes
 				 */
 				LOG( "Unexpected disconnet event received");
-				rumbleSync(200000);
+				rumbleSync( 200000);
 				disconnect();
 				return false;
 			case WIIUSE_READ_DATA:

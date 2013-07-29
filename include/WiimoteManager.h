@@ -9,18 +9,21 @@
 #define WIIMOTEMANAGER_H_
 
 #include <wiiuse.h>
+#include <mosquittopp.h>
 
 using namespace std;
+using namespace mosqpp;
 
-class WiimoteManager {
+class WiimoteManager : private mosquittopp {
 public:
 	WiimoteManager();
 	~WiimoteManager();
 	bool startHandlingEvent();
-	int connect();
+	int wiiConnect();
 	int resync();
 
 private:
+	void on_message(const struct mosquitto_message *message);
 	void changeVolume();
 	void rumbleAsync( int microsecond);
 	void rumbleSync( int microsecond);

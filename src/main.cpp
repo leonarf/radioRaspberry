@@ -14,9 +14,22 @@
 #include "ConfigManager.h"
 #include "ScreenManager.h"
 
+#include "jsoncpp/json/json.h"
+
 using namespace std;
 
 int main( int argc, char *argv[]) {
+	Json::Value root;
+	root["start"]["icon"] = "icon-play";
+	root["stop"]["icon"] = "icon-pause";
+	root["next"]["icon"] = "icon-forward";
+	root["previous"]["icon"] = "icon-backward";
+	root["plusVolume"]["icon"] = "icon-volume-up";
+	root["minusVolume"]["icon"] = "icon-volume-down";
+	Json::StyledWriter jsonWriter;
+	cout << jsonWriter.write(root) << endl;
+
+	/*
 	ScreenManager::instance()->setText("texte assez long", 1, 10, 10);
 	ScreenManager::instance()->setText("texte assez long", 2, 25, 10);
 	ScreenManager::instance()->setText("texte assez long", 3, 20, 10);
@@ -24,6 +37,7 @@ int main( int argc, char *argv[]) {
 	ScreenManager::instance()->setText("texte assez long", 1, 10, 15);
 	sleep(60);
 	return 0;
+	*/
 	string binDir = argv[0];
 	binDir = binDir.substr( 0, binDir.find_last_of( '/') + 1);
 	ConfigManager::instance()->setBinDir( binDir);
@@ -38,7 +52,7 @@ int main( int argc, char *argv[]) {
 
 	WiimoteManager wiimoteManager;
 	//boucle pour se connecter
-	while (wiimoteManager.connect() <= 0) {
+	while (wiimoteManager.wiiConnect() <= 0) {
 		sleep( 1);
 		LOG( "main loop : search wiimote to connect");
 	}

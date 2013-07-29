@@ -51,6 +51,7 @@ add_executable(
         src/WiimoteManager.cpp
         src/ConfigManager.cpp
         src/ScreenManager.cpp
+	src/LCDI2C.cpp
 )
 
 target_link_libraries(
@@ -58,6 +59,8 @@ target_link_libraries(
         wiiuse
         pthread
         mpdclient
+	mosquittopp
+	jsoncpp
 )
 
 ##################

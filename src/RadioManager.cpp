@@ -17,6 +17,45 @@
 
 #include "Utils.h"
 #include "RadioManager.h"
+#include "jsoncpp/json/json.h"
+
+void RadioManager::on_message( const struct mosquitto_message *message) {
+	string topic( message->topic);
+	string payload( static_cast<char *>( message->payload));
+	LOG( "MQTT event received, topic = " << topic << " and payload = " << payload);
+	if (topic == "/home/actuators" and payload == "list") {
+		Json::Value root;
+		root["start"]["icon"] = "play";
+		root["stop"]["icon"] = "pause";
+		root["next"]["icon"] = "forward";
+		root["previous"]["icon"] = "backward";
+		root["plusVolume"]["icon"] = "volume-up";
+		root["minusVolume"]["icon"] = "volume-down";
+		root["refreshList"]["icon"] = "refresh";
+		Json::StyledWriter jsonWriter;
+		string values = jsonWriter.write( root);
+		cout << "sending : " << values << endl;
+		publish( NULL, "/home/actuators/radio/values", values.size(), values.c_str(), 2);
+	} else if (topic == "/home/actuators/radio") {
+		LOG( "payload : " << payload);
+		if (payload == "start") {
+			RadioManager::instance()->startRadio();
+		} else if (payload == "stop") {
+			RadioManager::instance()->stopRadio();
+		} else if (payload == "next") {
+			RadioManager::instance()->nextRadio();
+		} else if (payload == "previous") {
+			RadioManager::instance()->prevRadio();
+		} else if (payload == "plusVolume") {
+			RadioManager::instance()->changeVolume( 5);
+		} else if (payload == "minusVolume") {
+			RadioManager::instance()->changeVolume( -5);
+		} else if (payload == "refreshList") {
+
+		}
+	}
+	return;
+}
 
 RadioManager* RadioManager::_pInstance = NULL;
 
@@ -61,13 +100,16 @@ RadioManager::RadioManager() :
 		_running = true;
 	}
 	_playedRadio = mpd_status_get_song_pos( status);
-	LOG("Played radio is (" << _playedRadio << ")" << _radioList[_playedRadio] );
+	LOG( "Played radio is (" << _playedRadio << ")" << _radioList[_playedRadio]);
 	_volume = mpd_status_get_volume( status);
 	mpd_status_free( status);
+
+	connectMQTT();
+	loop_start();
 }
 
 RadioManager::~RadioManager() {
-	// TODO !CodeTemplates.destructorstub.tododesc!
+	disconnect();
 }
 
 RadioManager* RadioManager::instance() {
@@ -75,6 +117,21 @@ RadioManager* RadioManager::instance() {
 		_pInstance = new RadioManager();
 	}
 	return _pInstance;
+}
+
+void RadioManager::connectMQTT() {
+	int mqttResult = connect( BROKER_ADDRESS, BROKER_PORT);
+	if (mqttResult != MOSQ_ERR_SUCCESS) {
+		LOG( "could not connect to mqtt broker, error : " << mqttResult);
+		return;
+	}
+	mqttResult = subscribe( NULL, "/home/actuators", 2);
+	mqttResult = subscribe( NULL, "/home/actuators/radio", 2);
+	mqttResult = subscribe( NULL, "/home/actuators/radio/#", 2);
+	if (mqttResult != MOSQ_ERR_SUCCESS) {
+		LOG( "could not subscribe to mqtt broker, error : " << mqttResult);
+		return;
+	}
 }
 
 void RadioManager::connectMPD() {
@@ -98,8 +155,7 @@ void RadioManager::nextRadio() {
 
 void RadioManager::stopRadio() {
 	if (_running) {
-		IF_MPD_BREAK( mpd_run_stop( _mpdConnect))
-		else {
+		IF_MPD_BREAK( mpd_run_stop( _mpdConnect)) else {
 			_running = false;
 		}
 	}
@@ -107,8 +163,7 @@ void RadioManager::stopRadio() {
 
 void RadioManager::startRadio() {
 	if (not _running) {
-		IF_MPD_BREAK( mpd_run_play( _mpdConnect))
-		else {
+		IF_MPD_BREAK( mpd_run_play( _mpdConnect)) else {
 			_running = true;
 		}
 	}
@@ -122,6 +177,12 @@ void RadioManager::setRadio( int radioNumber) {
 	else {
 		_playedRadio = radioNumber;
 	}
+	Json::Value root;
+	root["radioPlayed"] = _radioList[_playedRadio];
+	Json::StyledWriter jsonWriter;
+	string values = jsonWriter.write( root);
+	cout << "sending : " << values << endl;
+	publish( NULL, "/home/actuators/radio/values", values.size(), values.c_str(), 2);
 	if (not _changingRadio) {
 		std::thread changingThread( &RadioManager::changingRadio, this);
 		changingThread.detach();
