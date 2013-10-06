@@ -30,7 +30,7 @@ private:
 };
 
 class ScreenManager {
-	friend RotatingText;
+	friend class RotatingText;
 public:
 	static ScreenManager* instance();
 	virtual ~ScreenManager();

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ string numberToString( int num);
 
 #define LOG(text) cout << currentTime() << " :\t" << __PRETTY_FUNCTION__ << " :\t" << text << endl
 
-#define BROKER_ADDRESS /*"127.0.0.1"*/ "192.168.0.181"
+#define BROKER_ADDRESS "127.0.0.1" /*"192.168.0.181"*/
 #define BROKER_PORT 1883
 
 #endif /* UTILS_H_ */

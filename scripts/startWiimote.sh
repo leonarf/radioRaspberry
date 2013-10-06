@@ -22,8 +22,8 @@ else
 fi
 echo "$home"
 play "${home}/sound/hello_uk.wav"
-while [ 1 ]
-do
+#while [ 1 ]
+#do
 	sleep 10
 	# check the network
 	networkConfig="ifconfig | grep $ipAddress"
@@ -37,17 +37,18 @@ do
 	fi
 	
 	#check the bluetooth
-	hciDevices=$(hcitool dev)
-	if [[ ! "$hciDevices=" == *hci* ]]
-	then
-		play "${home}/sound/uh-oh.wav"
-		sudo ${home}/resetLibusb 1 4
-		sleep 5
-		sudo service bluetooth restart
-		continue
-	fi
+#	hciDevices=$(hcitool dev)
+#	if [[ ! "$hciDevices=" == *hci* ]]
+#	then
+#		play "${home}/sound/uh-oh.wav"
+#		sudo ${home}/resetLibusb 1 4
+#		sleep 5
+#		sudo service bluetooth restart
+#		continue
+#	fi
 	play "${home}/sound/comeonthen.wav"
-	${home}/radio
+	${home}/Radio&
+	${home}/IRRemote
 	stopComputer=$?
 	echo "$stopComputer"
 	if [ "$stopComputer" == "1" ]
@@ -56,4 +57,4 @@ do
 		$exitCommand
 	fi
 
-done
+#done

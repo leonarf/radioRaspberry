@@ -19,6 +19,7 @@ using namespace mosqpp;
 
 class RadioManager : private mosquittopp {
 public:
+	void start();
 	void setRadio( int radioNumber);
 	void startRadio();
 	void stopRadio();
@@ -44,6 +45,7 @@ private:
 	int _volume;
 	bool _running;
 	bool _changingRadio;
+	bool _stopModuleAsked;
 	static RadioManager* _pInstance;
 	struct mpd_connection *_mpdConnect;
 };

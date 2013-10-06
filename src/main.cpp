@@ -13,12 +13,16 @@
 #include "Utils.h"
 #include "ConfigManager.h"
 #include "ScreenManager.h"
+#include "LCDI2C.h"
+#include "RemoteIRManager.h"
 
 #include "jsoncpp/json/json.h"
 
 using namespace std;
 
 int main( int argc, char *argv[]) {
+	//LCD_I2C screen("/dev/i2c-1", 0x20);
+
 	Json::Value root;
 	root["start"]["icon"] = "icon-play";
 	root["stop"]["icon"] = "icon-pause";
@@ -37,7 +41,6 @@ int main( int argc, char *argv[]) {
 	ScreenManager::instance()->setText("texte assez long", 1, 10, 15);
 	sleep(60);
 	return 0;
-	*/
 	string binDir = argv[0];
 	binDir = binDir.substr( 0, binDir.find_last_of( '/') + 1);
 	ConfigManager::instance()->setBinDir( binDir);
@@ -49,7 +52,16 @@ int main( int argc, char *argv[]) {
 		cout << "argv[1] : " << argv[1] << endl;
 		ConfigManager::instance()->setConfigFile( argv[1]);
 	}
+	*/
+	cout << "constucteur de IRmanager" << endl;
+	RemoteIRManager remoteManager;
+	remoteManager.listenIR();
+	cout << "fini!" << endl;
 
+	/*
+	 * Code pour utiliser la wiimote
+	 */
+	/*
 	WiimoteManager wiimoteManager;
 	//boucle pour se connecter
 	while (wiimoteManager.wiiConnect() <= 0) {
@@ -62,4 +74,5 @@ int main( int argc, char *argv[]) {
 	} else {
 		return EXIT_SUCCESS;
 	}
+	*/
 }
