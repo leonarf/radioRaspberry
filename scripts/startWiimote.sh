@@ -3,7 +3,7 @@
 stopComputer=-1
 
 home=$(dirname "$0")
-target="##TARGET##"
+target="@TARGET@"
 
 if [[ "$target" == "raspbian" ]]
 then
