@@ -15,6 +15,16 @@
 
 using namespace std;
 
+#ifndef SOUND_DIR //should be define by cmake
+	#define SOUND_DIR "erreur"
+#endif
+
+#ifndef LIRCRC_FILE //should be define by cmake
+	#define LIRCRC_FILE "erreur"
+#endif
+#define BROKER_ADDRESS "127.0.0.1" /*"192.168.0.181"*/
+#define BROKER_PORT 1883
+
 string GetStdoutFromCommand( string cmd);
 
 vector<string> splitString( const string &s, char delim);
@@ -29,7 +39,5 @@ string numberToString( int num);
 
 #define LOG(text) cout << currentTime() << " :\t" << __PRETTY_FUNCTION__ << " :\t" << text << endl
 
-#define BROKER_ADDRESS "127.0.0.1" /*"192.168.0.181"*/
-#define BROKER_PORT 1883
 
 #endif /* UTILS_H_ */

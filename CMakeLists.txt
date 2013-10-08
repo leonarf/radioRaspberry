@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
 #Déclaration du projet
-project(mqtt_mpd_module)
+project(LeoModules)
 
+#TODO replace with configure_file
 function(replaceTag tag value filePath)
 	FILE(READ ${filePath} FILE_CONTENT)
 	MESSAGE("contenu du fichier ${filePath} : ${FILE_CONTENT}")
@@ -12,8 +13,6 @@ function(replaceTag tag value filePath)
 endfunction(replaceTag)
 
 set(TARGET "raspbian" CACHE STRING "qemu or fedora")
-SET(INSTALL_PREFIX "." CACHE PATH "Where sandbox will be created")
-set(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "where sandbox will be created" FORCE)
 
 include_directories(include)
 
@@ -22,21 +21,17 @@ include_directories(include)
 ###########################
 if ( ${TARGET} STREQUAL "raspbian" )
 	add_definitions(-std=c++0x)
-	add_library( wiiuse SHARED IMPORTED)
-	MESSAGE("put your libwiiuse.so in ${CMAKE_BINARY_DIR} for correct link")
-	set_target_properties( wiiuse PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/libwiiuse.so )
-	add_definitions( -DRASPBERRY )
-	set(INSTALL_DIR "sandbox")
-#	install(TARGETS wiiuse
-#		LIBRARY DESTINATION ${INSTALL_DIR})
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/libwiiuse.so
-		DESTINATION ${INSTALL_DIR})
+	#add_library( wiiuse SHARED IMPORTED)
+	#MESSAGE("put your libwiiuse.so in ${CMAKE_BINARY_DIR} for correct link")
+	#set_target_properties( wiiuse PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/libwiiuse.so )
+	#add_definitions( -DRASPBERRY )
+	#install(PROGRAMS ${CMAKE_BINARY_DIR}/libwiiuse.so
+	#	DESTINATION ${INSTALL_DIR})
 ########################
 # for fedora compilation
 ########################
 elseif( ${TARGET} STREQUAL "fedora" )
 	add_definitions(-std=gnu++11)
-	set(INSTALL_DIR "sandbox")
 else()
 	MESSAGE("TARGET ${TARGET} not supported")
 endif ()
@@ -79,21 +74,32 @@ target_link_libraries(
 ##################
 ## INSTALL PART ##
 ##################
-#install(PROGRAMS scripts/startWiimote.sh
-#	DESTINATION ${INSTALL_DIR})
+#Different install path :
+set(INSTALL_RUNTIME "bin")
+set(INSTALL_LIB "lib")
+set(INSTALL_MISC "share/${PROJECT_NAME}")
+set(INSTALL_SOUND "${INSTALL_MISC}/sound")
 
-#load the function replaceTag
-install(SCRIPT "replaceTag.cmake")
-#use the function loaded
-#install(CODE "replaceTag( \"##TARGET##\" ${TARGET} ${INSTALL_DIR}/startWiimote.sh)")
-install(FILES misc/webradio.m3u misc/lircrcd
-	DESTINATION ${INSTALL_DIR})
 
+configure_file(scripts/startWiimote.sh ${CMAKE_BINARY_DIR}/startWiimote.sh NEWLINE_STYLE UNIX)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/startWiimote.sh
+	DESTINATION ${INSTALL_MISC})
+
+install(FILES misc/webradio.m3u
+	DESTINATION ${INSTALL_MISC})
+
+add_definitions( -DLIRCRC_FILE="${CMAKE_INSTALL_PREFIX}/${INSTALL_MISC}/.lircrcd" )
+install(FILES misc/lircrcd
+	DESTINATION ${INSTALL_MISC}
+	RENAME ".lircrcd")
+
+add_definitions( -DSOUND_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_SOUND}" )
 set( soundFiles misc/byebye.wav misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
-install(FILES ${soundFiles} DESTINATION ${INSTALL_DIR}/sound)
+install(FILES ${soundFiles} DESTINATION ${INSTALL_SOUND})
+
 install(TARGETS Radio IRRemote utils
-	RUNTIME DESTINATION ${INSTALL_DIR}
-	LIBRARY DESTINATION ${INSTALL_DIR})
+	RUNTIME DESTINATION ${INSTALL_RUNTIME}
+	LIBRARY DESTINATION ${INSTALL_LIB})
 
 ######################
 ## PACKAGE CREATION ##

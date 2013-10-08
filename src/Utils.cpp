@@ -70,7 +70,7 @@ void readConfigurationFile( const string &fileName, map<string, string> &config)
 }
 
 void playSound( const string& soundFile) {
-	string tmp( "play " + ConfigManager::instance()->getBinDir() + "sound/" + soundFile);
+	string tmp( "play " + string(SOUND_DIR) + soundFile);
 	system( tmp.c_str());
 }
 
