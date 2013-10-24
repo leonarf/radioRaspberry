@@ -71,15 +71,21 @@ target_link_libraries(
 	jsoncpp
 )
 
+set(MODULES_LIST "IRRemote Radio")
+
 ##################
 ## INSTALL PART ##
 ##################
 #Different install path :
-set(INSTALL_RUNTIME "bin")
+set(INSTALL_RUNTIME "${CMAKE_INSTALL_PREFIX}/bin")
 set(INSTALL_LIB "lib")
 set(INSTALL_MISC "share/${PROJECT_NAME}")
 set(INSTALL_SOUND "${INSTALL_MISC}/sound")
 
+configure_file(scripts/initd.sh ${CMAKE_BINARY_DIR}/initd.sh @ONLY NEWLINE_STYLE UNIX)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/initd.sh
+	DESTINATION /etc/init.d
+	RENAME ${PROJECT_NAME})
 
 configure_file(scripts/startWiimote.sh ${CMAKE_BINARY_DIR}/startWiimote.sh NEWLINE_STYLE UNIX)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/startWiimote.sh
@@ -95,11 +101,13 @@ install(FILES misc/lircrcd
 
 add_definitions( -DSOUND_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_SOUND}" )
 set( soundFiles misc/byebye.wav misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
-install(FILES ${soundFiles} DESTINATION ${INSTALL_SOUND})
+install(FILES ${soundFiles}
+	DESTINATION ${INSTALL_SOUND})
 
 install(TARGETS Radio IRRemote utils
 	RUNTIME DESTINATION ${INSTALL_RUNTIME}
 	LIBRARY DESTINATION ${INSTALL_LIB})
+
 
 ######################
 ## PACKAGE CREATION ##
@@ -131,6 +139,15 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 	SET(CPACK_DEBIAN_PACKAGE_SECTION "raspberry")
 	SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
-	#SET(CPACK_COMPONENTS_ALL Libraries ApplicationData)
+#Post install script for .deb installation
+	configure_file(scripts/postInstall.sh ${CMAKE_BINARY_DIR}/postinst @ONLY NEWLINE_STYLE UNIX)
+	configure_file(scripts/preRemove.sh ${CMAKE_BINARY_DIR}/prerm @ONLY NEWLINE_STYLE UNIX)
+	SET(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+            "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm;")
 	INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+
+
+#install(CODE "execute_process(COMMAND echo mes couilles)")
+

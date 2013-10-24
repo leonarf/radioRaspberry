@@ -25,6 +25,10 @@ public:
 	void stopRadio();
 	void prevRadio();
 	void nextRadio();
+	/**@brief change radio for 30sec before coming back to the previous radio
+	 *
+	 */
+	void dodgeAd();
 	/*
 	 * return false if couldn't change volume because max or min already reach
 	 */
@@ -37,6 +41,7 @@ private:
 	RadioManager();
 	void changingRadio();
 	static void callChangingRadio();
+	static void callbackAfterAd();
 	void connectMPD();
 	void connectMQTT();
 	void on_message(const struct mosquitto_message *message);
@@ -45,6 +50,7 @@ private:
 	int _volume;
 	bool _running;
 	bool _changingRadio;
+	bool _dodgingAd;
 	bool _stopModuleAsked;
 	static RadioManager* _pInstance;
 	struct mpd_connection *_mpdConnect;

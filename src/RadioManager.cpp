@@ -62,9 +62,9 @@ void RadioManager::on_message( const struct mosquitto_message *message) {
 			string newState = root.get( "CHANGESTATE", "").asString();
 			if (newState == "play") {
 				RadioManager::instance()->startRadio();
-			} else if (newState == "stop") {
+			} else if (newState == "stop" || newState == "pause") {
 				RadioManager::instance()->stopRadio();
-			} else if (newState == "pause") {
+			} else if (newState == "dodge_ad") {
 				RadioManager::instance()->stopRadio();
 			}
 		}
@@ -114,6 +114,7 @@ RadioManager::RadioManager() :
 
 	mpd_status * status = mpd_run_status( _mpdConnect);
 	mpd_state currentState = mpd_status_get_state( status);
+	LOG( "Current MPD state is " << currentState);
 	if (currentState == MPD_STATE_PLAY) {
 		_running = true;
 	}
@@ -169,6 +170,16 @@ void RadioManager::prevRadio() {
 
 void RadioManager::nextRadio() {
 	setRadio( _playedRadio + 1);
+}
+
+void RadioManager::dodgeAd() {
+	if (not _dodgingAd) {
+		std::thread dodgingAdThread( &RadioManager::changingRadio, this);
+		dodgingAdThread.detach();
+	}
+}
+
+void RadioManager::callbackAfterAd() {
 }
 
 void RadioManager::stopRadio() {
@@ -231,7 +242,8 @@ void RadioManager::start() {
 	while (not _stopModuleAsked) {
 		int result = loop();
 		if (result != MOSQ_ERR_SUCCESS) {
-			LOG( "loop result was : " << result);
+			LOG( "ERROR : loop result was : " << result);
+			sleep( 1);
 		}
 	}
 }

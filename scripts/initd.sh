@@ -1,11 +1,11 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          skeleton
-# Required-Start:    $remote_fs $syslog
+# Provides:          @PROJECT_NAME@
+# Required-Start:    $remote_fs $syslog mpd mosquitto lirc
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Example initscript
+# Short-Description: Launch Radio and IRRemote program
 # Description:       This file should be used to construct scripts to be
 #                    placed in /etc/init.d.
 ### END INIT INFO
@@ -15,19 +15,23 @@
 # Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
-PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
-DESC="Control every daemon from @PROJECT_NAME@"
-NAME=daemonexecutablename
+PATH=/sbin:/bin:@INSTALL_RUNTIME@
+DESC="every module from @PROJECT_NAME@"
+NAME=@PROJECT_NAME@
 DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS="--options args"
-PIDFILE=/var/run/$NAME.pid
+DAEMON_ARGS="" #"--options args"
+MODULES="@MODULES_LIST@"
+PIDFILE=/var/run/$NAME
 SCRIPTNAME=/etc/init.d/$NAME
 
+export MPD_HOST=127.0.0.1
+export MPD_PORT=6699
+
 # Exit if the package is not installed
-[ -x "$DAEMON" ] || exit 0
+#[ -x "$DAEMON" ] || exit 0
 
 # Read configuration variable file if it is present
-[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+#[ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
@@ -42,18 +46,27 @@ SCRIPTNAME=/etc/init.d/$NAME
 #
 do_start()
 {
-        # Return
-        #   0 if daemon has been started
-        #   1 if daemon was already running
-        #   2 if daemon could not be started
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
-                || return 1
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
-                $DAEMON_ARGS \
-                || return 2
-        # Add code here, if necessary, that waits for the process to be ready
-        # to handle requests from services started subsequently which depend
-        # on this one.  As a last resort, sleep for some time.
+	# Return
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	result=0
+	for module in ${MODULES}
+	do
+		echo "start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module"
+		start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module --test > /dev/null \
+		        || result=1
+		start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module& \
+#		        || echo 'Problem start module $module' && result=2
+	done
+	if $result == 2
+	then
+		return 2
+	fi
+	sleep 1
+	# Add code here, if necessary, that waits for the process to be ready
+	# to handle requests from services started subsequently which depend
+	# on this one.  As a last resort, sleep for some time.
 }
 
 #
@@ -61,25 +74,29 @@ do_start()
 #
 do_stop()
 {
-        # Return
-        #   0 if daemon has been stopped
-        #   1 if daemon was already stopped
-        #   2 if daemon could not be stopped
-        #   other if a failure occurred
-        start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
-        RETVAL="$?"
-        [ "$RETVAL" = 2 ] && return 2
-        # Wait for children to finish too if this is a daemon that forks
-        # and if the daemon is only ever run from this initscript.
-        # If the above conditions are not satisfied then add some other code
-        # that waits for the process to drop all resources that could be
-        # needed by services started subsequently.  A last resort is to
-        # sleep for some time.
-        start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
-        [ "$?" = 2 ] && return 2
-        # Many daemons don't delete their pidfiles when they exit.
-        rm -f $PIDFILE
-        return "$RETVAL"
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	for module in ${MODULES}
+	do
+		start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile ${PIDFILE}_${module}.pid --name $module
+		RETVAL="$?"
+		[ "$RETVAL" = 2 ] && return 2
+		# Wait for children to finish too if this is a daemon that forks
+		# and if the daemon is only ever run from this initscript.
+		# If the above conditions are not satisfied then add some other code
+		# that waits for the process to drop all resources that could be
+		# needed by services started subsequently.  A last resort is to
+		# sleep for some time.
+		sleep 1
+		start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec @INSTALL_RUNTIME@/$module
+		[ "$?" = 2 ] && return 2
+		# Many daemons don't delete their pidfiles when they exit.
+		rm -f ${PIDFILE}_${module}.pid
+	done
+	return "$RETVAL"
 }
 
 #
