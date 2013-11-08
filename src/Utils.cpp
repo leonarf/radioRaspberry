@@ -13,6 +13,8 @@
 #include <sstream>
 #include <time.h>
 #include <fstream>
+#include <errno.h>
+#include <sys/stat.h>
 #include <boost/algorithm/string.hpp>
 
 namespace ba = boost::algorithm;
@@ -70,7 +72,7 @@ void readConfigurationFile( const string &fileName, map<string, string> &config)
 }
 
 void playSound( const string& soundFile) {
-	string tmp( "play " + string(SOUND_DIR) + soundFile);
+	string tmp( "/usr/bin/play " + string(SOUND_DIR) + '/' + soundFile);
 	system( tmp.c_str());
 }
 
@@ -79,4 +81,21 @@ string numberToString( int num) {
 	ostringstream strout;
 	strout << num;
 	return strout.str();
+}
+
+void daemonize(const char* pidFilePath)
+{
+	if (daemon(0, 0) == -1) {
+		logFile.open(LOG_FILE);
+		LOG("daemon() failed: " << strerror(errno));
+		return;
+	}
+	umask(777);
+	ofstream pidFile;
+	pidFile.open(pidFilePath);
+	pidFile << getpid();
+	pidFile.close();
+	logFile.open(LOG_FILE, ofstream::app | ofstream::ate);
+	logFile << getpid() << "aussi" << endl;
+	logFile.flush();
 }

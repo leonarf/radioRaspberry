@@ -3,15 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 #Déclaration du projet
 project(LeoModules)
 
-#TODO replace with configure_file
-function(replaceTag tag value filePath)
-	FILE(READ ${filePath} FILE_CONTENT)
-	MESSAGE("contenu du fichier ${filePath} : ${FILE_CONTENT}")
-	STRING(REPLACE "${tag})" "${value}" 
-		MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
-	FILE(WRITE ${filePath} "${MODIFIED_FILE_CONTENT}")
-endfunction(replaceTag)
-
 set(TARGET "raspbian" CACHE STRING "qemu or fedora")
 
 include_directories(include)
@@ -42,36 +33,61 @@ add_library(
 	utils
 	SHARED
         src/Utils.cpp
-	src/ConfigManager.cpp	
+		src/ConfigManager.cpp
+		src/LCDTexts.cpp	
+		src/mqttTopics.cpp
 )
+target_link_libraries(
+	utils
+		jsoncpp
+)
+
 
 #Déclaration des éxécutables
 add_executable(
 	IRRemote
-	src/RemoteIRManager.cpp
+		src/RemoteIRManager.cpp
         src/mainIR.cpp
 )
 target_link_libraries(
 	IRRemote
-	lirc_client
-	mosquittopp
-	utils
+		lirc_client
+		mosquittopp
+		utils
 )
+set_target_properties(IRRemote PROPERTIES COMPILE_DEFINITIONS "PID_FILE=\"/var/run/${PROJECT_NAME}_IRRemote.pid\"")
 
 add_executable(
 	Radio
-	src/RadioManager.cpp
-        src/mainRadio.cpp
+		src/RadioManager.cpp
+		src/mainRadio.cpp
 )
 target_link_libraries(
 	Radio
         mpdclient
-	mosquittopp
-	utils
-	jsoncpp
+		mosquittopp
+		utils
+		jsoncpp
 )
+set_target_properties(Radio PROPERTIES COMPILE_DEFINITIONS "PID_FILE=\"/var/run/${PROJECT_NAME}_Radio.pid\"")
 
-set(MODULES_LIST "IRRemote Radio")
+
+add_executable(
+	LCDManager
+		src/LiquidCrystal_I2C.cpp
+		src/LCDManager.cpp
+		src/mainLCD.cpp
+)
+target_link_libraries(
+	LCDManager
+    	wiringPi
+		mosquittopp
+		jsoncpp
+		utils
+)
+set_target_properties(LCDManager PROPERTIES COMPILE_DEFINITIONS "PID_FILE=\"/var/run/${PROJECT_NAME}_LCDManager.pid\"")
+
+set(MODULES_LIST "LCDManager IRRemote Radio")
 
 ##################
 ## INSTALL PART ##
@@ -87,24 +103,25 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/initd.sh
 	DESTINATION /etc/init.d
 	RENAME ${PROJECT_NAME})
 
-configure_file(scripts/startWiimote.sh ${CMAKE_BINARY_DIR}/startWiimote.sh NEWLINE_STYLE UNIX)
-install(PROGRAMS ${CMAKE_BINARY_DIR}/startWiimote.sh
+configure_file(scripts/startModules.sh ${CMAKE_BINARY_DIR}/startModules.sh NEWLINE_STYLE UNIX)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/startModules.sh
 	DESTINATION ${INSTALL_MISC})
 
 install(FILES misc/webradio.m3u
 	DESTINATION ${INSTALL_MISC})
 
+add_definitions( -DLOG_FILE="/var/log/${PROJECT_NAME}.log" )
 add_definitions( -DLIRCRC_FILE="${CMAKE_INSTALL_PREFIX}/${INSTALL_MISC}/.lircrcd" )
 install(FILES misc/lircrcd
 	DESTINATION ${INSTALL_MISC}
 	RENAME ".lircrcd")
 
 add_definitions( -DSOUND_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_SOUND}" )
-set( soundFiles misc/byebye.wav misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
+set( soundFiles misc/byebye.wav misc/COUGH1.WAV misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)
 install(FILES ${soundFiles}
 	DESTINATION ${INSTALL_SOUND})
 
-install(TARGETS Radio IRRemote utils
+install(TARGETS IRRemote Radio LCDManager utils
 	RUNTIME DESTINATION ${INSTALL_RUNTIME}
 	LIBRARY DESTINATION ${INSTALL_LIB})
 

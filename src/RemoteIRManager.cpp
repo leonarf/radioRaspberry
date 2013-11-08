@@ -6,6 +6,7 @@
  */
 
 #include "RemoteIRManager.h"
+#include "mqttTopics.h"
 #include "lirc/lirc_client.h"
 
 RemoteIRManager::RemoteIRManager() :
@@ -49,10 +50,11 @@ int RemoteIRManager::listenIR() {
 			LOG( "Executing command " << c);
 			string command( c);
 			if (command == "HALT"){
+				playSound("byebye.wav");
 				system("poweroff");
 				return 0;
 			}
-			int result = publish( NULL, "/home/actuators/radio", command.size(), command.c_str(), 2);
+			int result = publish( NULL, mqttTopics::radioActuator.c_str(), command.size(), command.c_str(), 2);
 			LOG( "result de publish = " << result);
 		}
 		free( code);
@@ -68,9 +70,6 @@ void RemoteIRManager::connectMQTT() {
 		LOG( "could not connect to mqtt broker, error : " << mqttResult);
 		return;
 	}
-	mqttResult = subscribe( NULL, "/home/sensors", 2);
-	mqttResult = subscribe( NULL, "/home/sensors/InfraRed", 2);
-	mqttResult = subscribe( NULL, "/home/sensors/InfraRed/#", 2);
 	if (mqttResult != MOSQ_ERR_SUCCESS) {
 		LOG( "could not subscribe to mqtt broker, error : " << mqttResult);
 		return;

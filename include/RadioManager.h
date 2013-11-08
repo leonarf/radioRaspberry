@@ -20,7 +20,7 @@ using namespace mosqpp;
 class RadioManager : private mosquittopp {
 public:
 	void start();
-	void setRadio( int radioNumber);
+	void setRadio( int radioNumber, bool changeDirectly);
 	void startRadio();
 	void stopRadio();
 	void prevRadio();
@@ -40,6 +40,8 @@ public:
 private:
 	RadioManager();
 	void changingRadio();
+	void broadcastRadioInfo();
+	void broadcastRadioInfoThread();
 	static void callChangingRadio();
 	static void callbackAfterAd();
 	void connectMPD();

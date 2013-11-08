@@ -53,17 +53,15 @@ do_start()
 	result=0
 	for module in ${MODULES}
 	do
-		echo "start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module"
+		echo "Starting module $module"
 		start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module --test > /dev/null \
-		        || result=1
-		start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module& \
-#		        || echo 'Problem start module $module' && result=2
+		        || (echo "$module already running" && continue)
+		start-stop-daemon --start --quiet --pidfile ${PIDFILE}_${module}.pid --exec @INSTALL_RUNTIME@/$module \
+		        || (echo "Problem start module $module" && return 2)
+		sleep 1
 	done
-	if $result == 2
-	then
-		return 2
-	fi
-	sleep 1
+	/usr/bin/play @CMAKE_INSTALL_PREFIX@/@INSTALL_SOUND@/hello_uk.wav
+	return 0
 	# Add code here, if necessary, that waits for the process to be ready
 	# to handle requests from services started subsequently which depend
 	# on this one.  As a last resort, sleep for some time.
@@ -81,6 +79,7 @@ do_stop()
 	#   other if a failure occurred
 	for module in ${MODULES}
 	do
+		echo "Stopping module $module"
 		start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile ${PIDFILE}_${module}.pid --name $module
 		RETVAL="$?"
 		[ "$RETVAL" = 2 ] && return 2

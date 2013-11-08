@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -22,6 +23,11 @@ using namespace std;
 #ifndef LIRCRC_FILE //should be define by cmake
 	#define LIRCRC_FILE "erreur"
 #endif
+
+#ifndef LOG_FILE //should be define by cmake
+	#define LOG_FILE "erreur"
+#endif
+
 #define BROKER_ADDRESS "127.0.0.1" /*"192.168.0.181"*/
 #define BROKER_PORT 1883
 
@@ -37,7 +43,11 @@ void playSound(const string& soundFile);
 
 string numberToString( int num);
 
-#define LOG(text) cout << currentTime() << " :\t" << __PRETTY_FUNCTION__ << " :\t" << text << endl
+static ofstream logFile;
+#define LOG(text) 	logFile.open(LOG_FILE, ofstream::app | ofstream::ate);\
+	logFile << currentTime() << " :\t" << __PRETTY_FUNCTION__ << " :\t" << text << endl;\
+	logFile.close()
 
+void daemonize(const char* pidFilePath);
 
 #endif /* UTILS_H_ */

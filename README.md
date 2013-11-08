@@ -36,4 +36,4 @@ This project functions are :
 * Press `c` to reconfigure
 * Press `g` to generate MakeFile
 * Build with `make` command
-* `make install` will create a 'sandbox' folder containing all file used by the program
+* `cpack ..` will create a debian package of the program, to install it where you want
