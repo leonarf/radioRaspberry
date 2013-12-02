@@ -38,7 +38,10 @@ void LCDManager::on_message( const struct mosquitto_message *message) {
 				string songTitle = radioPlayed.get( (unsigned int) 3, " --- --- --- ---").asString() + " --- ";
 				stringstream ss;
 				if (running) {
-					_lcd.backlight();
+					if (not _LCDactive) {
+						_lcd.backlight();
+						_LCDactive = true;
+					}
 					ss << " (" << radioNumber << ")" << radioName << " --- ";
 					if (_radioPlayedId == 0) {
 						LOG( "Creating RotatingText with : " << ss.str());
@@ -50,7 +53,10 @@ void LCDManager::on_message( const struct mosquitto_message *message) {
 						changeText( _titlePlayedId, songTitle);
 					}
 				} else {
-					_lcd.noBacklight();
+					if (_LCDactive) {
+						_lcd.noBacklight();
+						_LCDactive = false;
+					}
 				}
 			}
 		}
@@ -73,6 +79,7 @@ LCDManager::LCDManager() :
 }
 
 LCDManager::~LCDManager() {
+	_lcd.noBacklight();
 	disconnect();
 }
 
@@ -115,11 +122,13 @@ void LCDManager::start() {
 	int textId = setText( new FixedText( ss.str().substr( 0, 20), 1, 1));
 	while (1) {
 		usleep( 500000);
-		ss.str( "");
-		result = time( NULL);
-		ss << asctime( localtime( &result));
-		changeText( textId, ss.str().substr( 0, 20));
-		update();
+		if (_LCDactive) {
+			ss.str( "");
+			result = time( NULL);
+			ss << asctime( localtime( &result));
+			changeText( textId, ss.str().substr( 0, 20));
+			update();
+		}
 	}
 }
 

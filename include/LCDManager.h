@@ -42,6 +42,7 @@ private:
 
 	int _radioPlayedId;
 	int _titlePlayedId;
+	bool _LCDactive;
 };
 
 #endif /* RADIOMANAGER_H_ */

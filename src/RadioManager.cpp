@@ -220,10 +220,10 @@ void RadioManager::setRadio( int radioNumber, bool changeDirectly) {
 		if (changeDirectly) {
 			if (_running) {
 				IF_MPD_BREAK( mpd_run_stop( _mpdConnect));
-				broadcastRadioInfo();
-				_running = true;
 			}
 			IF_MPD_BREAK( mpd_run_play_pos( _mpdConnect, _playedRadio));
+			_running = true;
+			broadcastRadioInfo();
 		} else {
 			std::thread changingThread( &RadioManager::changingRadio, this);
 			changingThread.detach();
@@ -288,8 +288,8 @@ void RadioManager::changingRadio() {
 		IF_MPD_BREAK( mpd_run_stop( _mpdConnect));
 	}
 	IF_MPD_BREAK( mpd_run_play_pos( _mpdConnect, _playedRadio));
-	broadcastRadioInfo();
 	_running = true;
+	broadcastRadioInfo();
 	_changingRadio = false;
 }
 
@@ -312,11 +312,11 @@ void RadioManager::broadcastRadioInfo() {
 		//add radio name
 		if ((value = mpd_song_get_tag( oneRadio, MPD_TAG_NAME, 0)) != NULL) {
 			LOG( "RADIONAME FOUND : " << value);
-			root["radioPlayed"].append( string(value));
+			root["radioPlayed"].append( string( value));
 		}
 		//add artist name
 		if ((value = mpd_song_get_tag( oneRadio, MPD_TAG_TITLE, 0)) != NULL) {
-			root["radioPlayed"].append( string(value));
+			root["radioPlayed"].append( string( value));
 		}
 		for (int tag = MPD_TAG_UNKNOWN; tag < MPD_TAG_COUNT; ++tag) {
 			int i = 0;
