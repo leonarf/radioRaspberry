@@ -41,6 +41,7 @@ private:
 	RadioManager();
 	void changingRadio();
 	void broadcastRadioInfo();
+	void broadcastVolume();
 	void broadcastRadioInfoThread();
 	static void callChangingRadio();
 	static void callbackAfterAd();

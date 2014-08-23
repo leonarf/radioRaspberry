@@ -1,10 +1,13 @@
 #!/bin/sh
 # prerm script
 #
-# Removes all files installed by: ./setup.py install
 echo "post installation script"
 ldconfig
 update-rc.d @PROJECT_NAME@ defaults
+# overwrite lircd.conf
+mv /etc/lirc/custom_lircd.conf /etc/lirc/lircd.conf
+service lirc restart
+
 
 
 

@@ -15,8 +15,9 @@ using namespace std;
 
 void signalHandler( int signum )
 {
-    LOG("Interrupt signal (" << signum << ") received.\n");
+    LOG_INFORMATION("Interrupt signal (" << signum << ") received.\n");
 
+    LCDManager::instance()->poweredOff();
     // cleanup and close up stuff here
     // terminate program
 

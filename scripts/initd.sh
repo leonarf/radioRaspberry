@@ -15,7 +15,7 @@
 # Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
-PATH=/sbin:/bin:@INSTALL_RUNTIME@
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:@INSTALL_RUNTIME@
 DESC="every module from @PROJECT_NAME@"
 NAME=@PROJECT_NAME@
 DAEMON=/usr/sbin/$NAME
@@ -50,6 +50,7 @@ do_start()
 	#   0 if daemon has been started
 	#   1 if daemon was already running
 	#   2 if daemon could not be started
+	logrotate /etc/logrotate.d/@PROJECT_NAME@
 	result=0
 	for module in ${MODULES}
 	do

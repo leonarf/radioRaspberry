@@ -48,9 +48,8 @@ vector<string> splitString( const string &s, char delim) {
 
 string currentTime() {
 	char cDate[10]; /* strlen("18:17:54") + 1 */
-	time_t timer;
-	time( &timer);
-	struct tm* tm_info = localtime( &timer);
+	time_t timer = time( NULL);
+	tm* tm_info = localtime( &timer);
 	strftime( cDate, 20, "%H:%M:%S", tm_info);
 	return string( cDate);
 }
@@ -72,30 +71,26 @@ void readConfigurationFile( const string &fileName, map<string, string> &config)
 }
 
 void playSound( const string& soundFile) {
-	string tmp( "/usr/bin/play " + string(SOUND_DIR) + '/' + soundFile);
+	LOG_INFORMATION( "playing sound : " << soundFile);
+	string tmp( "/usr/bin/play " + string( SOUND_DIR) + '/' + soundFile);
 	system( tmp.c_str());
 }
 
-//Converting a number to string
-string numberToString( int num) {
-	ostringstream strout;
-	strout << num;
-	return strout.str();
-}
-
-void daemonize(const char* pidFilePath)
-{
-	if (daemon(0, 0) == -1) {
-		logFile.open(LOG_FILE);
-		LOG("daemon() failed: " << strerror(errno));
+void daemonize( const char* pidFilePath) {
+	if (daemon( 0, 0) == -1) {
+		LOG_ERROR( "daemon() failed: " << strerror(errno));
 		return;
 	}
-	umask(777);
+	umask( 777);
 	ofstream pidFile;
-	pidFile.open(pidFilePath);
+	pidFile.open( pidFilePath);
 	pidFile << getpid();
 	pidFile.close();
-	logFile.open(LOG_FILE, ofstream::app | ofstream::ate);
-	logFile << getpid() << "aussi" << endl;
-	logFile.flush();
+	LOG_INFORMATION( getpid() << "aussi");
+}
+
+void logToSyslog( int priority, string text) {
+	openlog( NULL, 0, LOG_DAEMON);
+	syslog( priority, text.c_str());
+	closelog();
 }

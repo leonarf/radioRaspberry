@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <iostream>
-#include <fstream>
+#include <sstream>
+#include <syslog.h>
 
 using namespace std;
 
@@ -41,12 +41,15 @@ void readConfigurationFile( const string &fileName, map<string, string> &config)
 
 void playSound(const string& soundFile);
 
-string numberToString( int num);
+void logToSyslog( int priority, string text);
 
-static ofstream logFile;
-#define LOG(text) 	logFile.open(LOG_FILE, ofstream::app | ofstream::ate);\
-	logFile << currentTime() << " :\t" << __PRETTY_FUNCTION__ << " :\t" << text << endl;\
-	logFile.close()
+static stringstream logFile;
+
+#define LOG_ERROR(text) LOG(LOG_ERR, "[ERROR]" << text)
+#define LOG_INFORMATION(text) LOG(LOG_INFO, "[INFO]" << text)
+#define LOG(priority, text) 	logFile.str("");\
+	logFile << __PRETTY_FUNCTION__ << " :" << text;\
+	logToSyslog(priority, logFile.str())
 
 void daemonize(const char* pidFilePath);
 

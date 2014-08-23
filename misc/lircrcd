@@ -9,15 +9,19 @@
 begin
     prog = IRmanager
     button = KEY_VOLUMEUP
-    repeat = 5
-    config = {"VOLUME" : 1}
+    config = {"VOLUME" : 5}
 end
 
 begin
     prog = IRmanager
     button = KEY_VOLUMEDOWN
-    repeat = 5
-    config = {"VOLUME" : -1}
+    config = {"VOLUME" : -5}
+end
+
+begin
+    prog = IRmanager
+    button = BTN_0
+    config = {"SETRADIO" : 0}
 end
 
 begin
@@ -76,7 +80,7 @@ end
 
 begin
     prog = IRmanager
-    button = KEY_PREVIOUSSONG
+    button = KEY_CHANNELDOWN
     config = {"CHANGERADIO" : -1}
 end
 
@@ -88,7 +92,7 @@ end
 
 begin
     prog = IRmanager
-    button = KEY_NEXTSONG
+    button = KEY_CHANNELUP
     config = {"CHANGERADIO" : 1}
 end
 

@@ -57,6 +57,7 @@ target_link_libraries(
 )
 set_target_properties(IRRemote PROPERTIES COMPILE_DEFINITIONS "PID_FILE=\"/var/run/${PROJECT_NAME}_IRRemote.pid\"")
 
+
 add_executable(
 	Radio
 		src/RadioManager.cpp
@@ -103,10 +104,6 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/initd.sh
 	DESTINATION /etc/init.d
 	RENAME ${PROJECT_NAME})
 
-configure_file(scripts/startModules.sh ${CMAKE_BINARY_DIR}/startModules.sh NEWLINE_STYLE UNIX)
-install(PROGRAMS ${CMAKE_BINARY_DIR}/startModules.sh
-	DESTINATION ${INSTALL_MISC})
-
 install(FILES misc/webradio.m3u
 	DESTINATION ${INSTALL_MISC})
 
@@ -115,6 +112,14 @@ add_definitions( -DLIRCRC_FILE="${CMAKE_INSTALL_PREFIX}/${INSTALL_MISC}/.lircrcd
 install(FILES misc/lircrcd
 	DESTINATION ${INSTALL_MISC}
 	RENAME ".lircrcd")
+
+install(FILES misc/logrotate.conf
+	DESTINATION /etc/logrotate.d
+	RENAME "${PROJECT_NAME}")
+
+install(FILES misc/lircd.conf
+	DESTINATION /etc/lirc/
+	RENAME "custom_lircd.conf")
 
 add_definitions( -DSOUND_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_SOUND}" )
 set( soundFiles misc/byebye.wav misc/COUGH1.WAV misc/comeonthen.wav misc/hello_uk.wav misc/uh-oh.wav misc/youllregretthat.wav)

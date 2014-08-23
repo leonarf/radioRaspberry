@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <mutex>
 
 #include <mosquittopp.h>
 #include <LiquidCrystal_I2C.h>
@@ -19,12 +20,21 @@
 using namespace std;
 using namespace mosqpp;
 
+typedef enum {
+	TIME = 0,
+	VOLUME,
+	RADIO,
+	SONG
+} MessageId;
+
 class LCDManager: private mosquittopp {
 public:
 	void start();
-	int setText( LCDText* text);
-	void changeText( int textId, string text);
-	void removeText( int textId);
+	void poweredOff();
+	void newText( MessageId textId, LCDText* text);
+	void changeText( MessageId textId, string text);
+	void removeText( MessageId textId);
+	bool textExist( MessageId textId);
 
 	static LCDManager* instance();
 	virtual ~LCDManager();
@@ -34,15 +44,13 @@ private:
 	void connectMQTT();
 	void on_message( const struct mosquitto_message *message);
 	void update();
-	int _nextFreeId;
-	vector<int> _textIds;
-	map<int, LCDText*> _messages;
+	map<MessageId, LCDText*> _messages;
 	LiquidCrystal_I2C _lcd;
 	static LCDManager* _pInstance;
 
-	int _radioPlayedId;
-	int _titlePlayedId;
 	bool _LCDactive;
+	bool _running;
+	mutex update_mutex;
 };
 
 #endif /* RADIOMANAGER_H_ */
